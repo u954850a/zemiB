@@ -9,7 +9,7 @@ public class ZemiB {
 
 
 	public static void main(final String[] args) {
-
+		// hogehoge
 		new ZemiB().run("data/demo.txt");
 
 	}
