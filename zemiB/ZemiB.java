@@ -1,7 +1,9 @@
 package zemiB;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -141,6 +143,7 @@ public class ZemiB {
 	final int height = 30;
 	final int width = 30;
 	int[][] field;
+	Trie dictionary;
 	final int NONE = -1;
 	
 	public ZemiB() {
@@ -150,14 +153,33 @@ public class ZemiB {
 	
 	
 	public static void main(final String[] args) throws FileNotFoundException {
-		(new ZemiB()).run("input.txt");
+		try {
+			(new ZemiB()).run("input.txt", "distionary.txt");
+		} catch (IOException e) {
+			// TODO 自動生成された catch ブロック
+			e.printStackTrace();
+		}
 	}
 
 
-	public void run(final String inputFileName) throws FileNotFoundException{
+	public void run(final String inputFileName, final String dictFileName) throws IOException{
+		dictionary = new Trie();
+		FileReader fr = new FileReader(dictFileName);
+		BufferedReader br = new BufferedReader(fr);
+		String line;
+		while ((line = br.readLine()) != null) {
+			String[] hoge = line.split(" ", 0);
+			List<Integer> tmp = new ArrayList<Integer>();
+			for(int i = 0; i < hoge.length; i++) {
+				tmp.add(Integer.parseInt(hoge[i]));
+			}
+			dictionary.add(tmp);
+		}
+		
 		for(int i = 0; i < height; i++) {
 			Arrays.fill(field[i], NONE);
 		}
+		
 		File file = new File(inputFileName);
 		Scanner scan = new Scanner(file);
 		while(scan.hasNext()) {
