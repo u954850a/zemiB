@@ -175,6 +175,7 @@ public class ZemiB {
 			}
 			dictionary.add(tmp);
 		}
+		br.close();
 		
 		for(int i = 0; i < height; i++) {
 			Arrays.fill(field[i], NONE);
