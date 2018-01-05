@@ -7,6 +7,8 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -114,6 +116,23 @@ class BNode {
 	}
 }
 
+class BNodeComparator implements Comparator<BNode> {
+
+	@Override
+	public int compare(BNode o1, BNode o2) {
+		int val1 = o1.eval();
+		int val2 = o2.eval();
+		if(val1 < val2) {
+			return 1;
+		} else if(val1 == val2) {
+			return 0;
+		} else {
+			return -1;
+		}
+	}
+	
+}
+
 public class ZemiB {
 
 	
@@ -159,9 +178,17 @@ public class ZemiB {
 		nodes.add(new BNode());
 		boolean endFlag = true;
 		do {
-			// 探索
-			// nodesの各要素に関してgenerateNextやってその結果をnodesとまーじ
-			// そして枝刈り
+			List<BNode> nextNodes = new ArrayList<BNode>();
+			for(BNode node : nodes) {
+				nextNodes.addAll(node.generateNext());
+			}
+			// 大きい順にソート
+			Collections.sort(nextNodes, new BNodeComparator());
+			// 枝を刈る
+			nodes.clear();
+			for(int i = 0; i < BeamWidth && i < nextNodes.size(); i++) {
+				nodes.add(nextNodes.get(i));
+			}
 		}while(endFlag);
 		return nodes.get(0);
 	}
