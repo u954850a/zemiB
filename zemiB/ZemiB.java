@@ -51,6 +51,7 @@ class Trie {
 class Node {
 	private Map<Integer, Node> nextNodes;
 	private List<Node> nodes;
+	// なんかの役にたつかもしれないのでノードごとに番号をふってます
 	private int number;
 	private boolean endFlag;
 	
@@ -61,6 +62,7 @@ class Node {
 		this.endFlag = false;
 	}
 	
+	//sのインデックスi番目以降を挿入する
 	public void add(List<Integer> s, int i) {
 		if(i == s.size()){
 			this.endFlag = true;
@@ -237,6 +239,7 @@ public class ZemiB {
 		}
 		br.close();
 		{
+			int sum = 0;
 			Set<Integer> s = new HashSet<Integer>();
 			for(int i = 0; i < height; i++) {
 				for(int j = 0; j < width; j++) {
@@ -253,11 +256,14 @@ public class ZemiB {
 					}
 					List<Integer> list = enumerate(i, j, next, usedEdgeFlag);
 					s.addAll(list);
+					System.out.println(list.size());
+					sum += list.size();
 					System.out.println(s.size());
 //					sum += s.size();
 				}
 			}
-			System.out.println("sum : " + s.size());
+			System.out.println("sum : " + sum);
+			System.out.println("set : " + s.size());
 		}
 //		BNode answer = search();
 		// anser.printLog();
@@ -312,6 +318,7 @@ public class ZemiB {
 //		System.out.println("START  (x, y) : " + "(" + x + ", " + y + ")");
 		Queue<Point> qu = new ArrayDeque<Point>();
 		qu.add(new Point(x, y));
+		// 前にどの方向からきたのかをメモっておく
 		int[][] preDirection = new int[height][width];
 		for(int[] a : preDirection) {
 			Arrays.fill(a, NONE);
@@ -408,6 +415,7 @@ public class ZemiB {
 		final int BeamWidth = 100;
 		List<BNode> nodes = new ArrayList<BNode>();
 		nodes.add(new BNode());
+		BNode res = null;
 		do {
 			List<BNode> nextNodes = new ArrayList<BNode>();
 			for(BNode node : nodes) {
@@ -421,8 +429,15 @@ public class ZemiB {
 			for(int i = 0; i < BeamWidth && i < nextNodes.size(); i++) {
 				nodes.add(nextNodes.get(i));
 			}
+			if(res == null) {
+				res = nodes.get(0);
+			} else {
+				if(res.eval() < nodes.get(0).eval()) {
+					res = nodes.get(0);
+				}
+			}
 		}while(true);
-		return nodes.get(0);
+		return res;
 	}
 
 
