@@ -243,9 +243,15 @@ public class ZemiB {
 					if(field[i][j] == NONE) continue;
 					Node next = dictionary.getRoot().getNextNode(field[i][j]);
 					if(next == null) continue;
-					System.out.println(field[i][j]);
-					usedEdgeFlag = new boolean[height][width][4];
-					List<Integer> list = enumerate(i, j, next);
+					System.out.println("");
+					System.out.println("char : " + field[i][j]);
+					boolean[][][] usedEdgeFlag = new boolean[height][width][4];
+					for(boolean[][] a : usedEdgeFlag) {
+						for(boolean[] b : a) {
+							Arrays.fill(b, false);
+						}
+					}
+					List<Integer> list = enumerate(i, j, next, usedEdgeFlag);
 					s.addAll(list);
 					System.out.println(s.size());
 //					sum += s.size();
@@ -261,70 +267,129 @@ public class ZemiB {
 		return 0 <= x && x < height && 0 <= y && y < width;
 	}
 	
-	boolean[][][] usedEdgeFlag;
-	private List<Integer> enumerate(int x, int y, Node current) {
+	private void check(boolean[][][] usedEdgeFlag) {
+		for(int i = 0; i < height; i++) {
+			for(int j = 0; j < width; j++) {
+				for(int k = 0; k < 4; k++) {
+					if(usedEdgeFlag[i][j][k]) {
+						assert(usedEdgeFlag[i+dx[k]][j+dy[k]][(k+2)%4]);
+					}
+				}
+			}
+		}
+	}
+	
+	private void print(boolean[][][] usedEdgeFlag) {
+		for(int i = 0; i < height; i++) {
+			for(int j = 0; j < width; j++) {
+				for(int k = 0; k < 4; k++) {
+					if(usedEdgeFlag[i][j][k]) {
+						System.out.print(1);
+					} else {
+						System.out.print(0);
+					}
+				}
+				System.out.print(" ");
+			}
+			System.out.println("");
+		}
+	}
+	
+	private void print_dirs(int[][] hoge) {
+		for(int i = 0; i < height; i++) {
+			for(int j = 0; j < width; j++) {
+				System.out.print(hoge[i][j]+" ");
+			}
+			System.out.println("");
+		}
+	}
+	
+//	boolean[][][] usedEdgeFlag;
+	private List<Integer> enumerate(int x, int y, Node current, boolean[][][] usedEdgeFlag) {
 		// まずBFS
-		System.out.println("x : " + x);
-		System.out.println("y : " + y);
+//		System.out.println("x : " + x);
+//		System.out.println("y : " + y);
+//		System.out.println("START  (x, y) : " + "(" + x + ", " + y + ")");
 		Queue<Point> qu = new ArrayDeque<Point>();
 		qu.add(new Point(x, y));
 		int[][] preDirection = new int[height][width];
 		for(int[] a : preDirection) {
 			Arrays.fill(a, NONE);
 		}
+		final int ROOT = 100;
+		preDirection[x][y] = ROOT;
 		while(!qu.isEmpty()) {
 			Point currentPoint = qu.poll();
 			for(int k = 0; k < 4; k++) {
 				if(usedEdgeFlag[currentPoint.getX()][currentPoint.getY()][k]) {
 					continue;
 				}
-				int nx = x+dx[k];
-				int ny = y+dy[k];
-				if(!checkRange(nx, ny) || preDirection[nx][ny] != NONE) continue;
+				
+				int nx = currentPoint.getX()+dx[k];
+				int ny = currentPoint.getY()+dy[k];
+//				System.out.println(nx + ", " + ny + ", " + k);
+				if(!checkRange(nx, ny) || preDirection[nx][ny] != NONE){
+//					System.out.println("hoge");
+					continue;
+				}
+//				System.out.println(nx + ", " + ny + ", " + k);
+//				System.out.println("cur " + currentPoint.getX() + ", " + currentPoint.getY() + ", " + k);
+//				System.out.println(dx[k] + " " + dy[k]);
 				preDirection[nx][ny] = (k+2)%4;
+//				print_dirs(preDirection);
+				if(field[nx][ny] == NONE) {
+					qu.add(new Point(nx, ny));
+				}
 			}
 		}
 		
-		System.out.println("unnko");
+//		System.out.println("unnko");
 		
 		// そして次のノードを決める
 		List<Integer> res = new ArrayList<Integer>();
 		if(current.isEnd()) {
 			res.add(current.getNumber());
 		}
+//		print_dirs(preDirection);
 		for(int i = 0; i < height; i++) {
 			for(int j = 0; j < width; j++) {
 				if(preDirection[i][j] == NONE || field[i][j] == NONE) continue;
 				Node next = current.getNextNode(field[i][j]);
 				if(next == null) continue;
 				
-				System.out.println("i : " + i);
-				System.out.println("j : " + j);
+//				System.out.println("i : " + i);
+//				System.out.println("j : " + j);
+//				System.out.println(usedEdgeFlag);
 				int curi = i, curj = j;
-				while(preDirection[curi][curj] != NONE) {
+				while(preDirection[curi][curj] != ROOT) {
 					int dir = preDirection[curi][curj];
-					System.out.println("curi : " + curi);
-					System.out.println("curj : " + curj);
+//					System.out.println("curi : " + curi);
+//					System.out.println("curj : " + curj);
+//					System.out.println("dir : " + dir);
+//					System.out.println(curj+dy[dir]);
 					
 					assert(!usedEdgeFlag[curi][curj][dir]);
 					usedEdgeFlag[curi][curj][dir] = true;
 					assert(!usedEdgeFlag[curi+dx[dir]][curj+dy[dir]][(dir+2)%4]);
-					usedEdgeFlag[curi+dx[dir]][curj+dy[dir]][(dir+2)%4] = true;
 					curi += dx[dir];
 					curj += dy[dir];
+					usedEdgeFlag[curi][curj][(dir+2)%4] = true;
 				}
+//				check(usedEdgeFlag);
 				assert(curi == x); assert(curj == y);
 				
-				List<Integer> tmp = enumerate(i, j, next);
+				List<Integer> tmp = enumerate(i, j, next, usedEdgeFlag);
 				
 				curi = i;
 				curj = j;
-				while(preDirection[curi][curj] != NONE) {
+				while(preDirection[curi][curj] != ROOT) {
 					int dir = preDirection[curi][curj];
+					assert(usedEdgeFlag[curi][curj][dir]);
 					usedEdgeFlag[curi][curj][dir] = false;
-					usedEdgeFlag[curi+dx[dir]][curj+dy[dir]][(dir+2)%4] = false;
 					curi += dx[dir];
 					curj += dy[dir];
+					assert(usedEdgeFlag[curi][curj][(dir+2)%4]);
+					usedEdgeFlag[curi][curj][(dir+2)%4] = false;
 				}
 				
 				if(tmp.size() > res.size()) {
@@ -335,6 +400,7 @@ public class ZemiB {
 				res.addAll(tmp);
 			}
 		}
+//		System.out.println("END  (x, y) : " + "(" + x + ", " + y + ")");
 		return res;
 	}
 	
